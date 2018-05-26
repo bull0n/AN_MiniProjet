@@ -1,4 +1,4 @@
-class Vector2
+export class Vector2
 {
   constructor(arg1, arg2, isPolar = false)
   {
@@ -21,8 +21,8 @@ class Vector2
 
   computePolarVector()
   {
-    this.length = Math.sqrt(x*x + y*y);
-    this.angle = Math.atan2(y, x)
+    this.length = Math.sqrt(this.x*this.x + this.y*this.y);
+    this.angle = Math.atan2(this.y, this.x)
   }
 
   computeCartesianVector()
@@ -36,6 +36,7 @@ class Vector2
     this.x = x;
     this.computePolarVector();
   }
+
 
   setY(y)
   {
