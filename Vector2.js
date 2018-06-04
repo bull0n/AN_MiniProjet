@@ -37,7 +37,6 @@ export class Vector2
     this.computePolarVector();
   }
 
-
   setY(y)
   {
     this.y = y;
