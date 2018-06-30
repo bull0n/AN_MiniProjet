@@ -9,9 +9,10 @@ export class Simulation
     this.context = canvas.getContext('2d');
     this.frameRate = 1000/60;
     this.timestep = 86400 * daysPerFrame;
+    this.isRunning = false;
 
     // https://www.google.com/search?channel=fs&q=gravitational+constant&ie=utf-8&oe=utf-8
-    this.pixelsPerAU = pixelsPerAU;
+    this.pixelsPerAU =  + parseInt(pixelsPerAU);
     this.AUinMeters = 1.49e11; //also distance earth -> sun
     this.scaleFactor = this.pixelsPerAU / this.AUinMeters;
     this.daysPassed = 0;
@@ -27,7 +28,7 @@ export class Simulation
     this.addObject(new CelestialObject('Jupiter', 20, '#FFE4C4', this.scaleFactor, 1.898e27, new Vector2(0,-13070), new Vector2(5.203*this.AUinMeters,0)));
     this.addObject(new CelestialObject('Saturn', 20, '#DEB887', this.scaleFactor, 5.6834e26, new Vector2(0,-9680), new Vector2(9.539*this.AUinMeters,0)));
     this.addObject(new CelestialObject('Uranus', 11, '#87CEEB', this.scaleFactor, 8.681e25, new Vector2(0,-6800), new Vector2(19.18*this.AUinMeters,0)));
-    this.addObject(new CelestialObject('Neptune', 10, '#000080', this.scaleFactor, 1.024e26, new Vector2(0,-5430), new Vector2(39.53*this.AUinMeters,0)));
+    this.addObject(new CelestialObject('Neptune', 10, '#1e97ed', this.scaleFactor, 1.024e26, new Vector2(0,-5430), new Vector2(39.53*this.AUinMeters,0)));
 
     this.draw();
   }
@@ -39,6 +40,7 @@ export class Simulation
     this.context.translate(this.context.canvas.width / 2, this.context.canvas.height / 2);
     this.context.scale(1, -1);
 
+    // draw all the planet
     for(let i = 0; i < this.listObject.length; i++)
     {
       this.listObject[i].draw(this.context);
@@ -54,10 +56,13 @@ export class Simulation
     const FONT_SIZE = 20;
     const POS_X = 50;
     let posY = 50;
+
+    // draw days past
     this.context.font = `${FONT_SIZE}px Arial`;
     this.context.fillStyle = 'white';
     this.context.fillText(`${this.daysPassed} days passed`,POS_X, posY);
 
+    // draw planet name
     for(let i = 0; i < this.listObject.length; i++)
     {
       posY += FONT_SIZE;
@@ -65,6 +70,23 @@ export class Simulation
       this.context.fillText(this.listObject[i].name,POS_X, posY);
     }
 
+    // draw the scale
+    posY += FONT_SIZE;
+    this.context.fillStyle = 'white';
+    this.context.fillText("scale : ", POS_X, posY);
+
+    posY += FONT_SIZE;
+    this.context.fillText("1 AU", POS_X + this.pixelsPerAU + 10, posY);
+
+    // draw the line for the scale
+    this.context.strokeStyle = 'white';
+    posY -= 5;
+
+    this.context.beginPath();
+    this.context.moveTo(POS_X, posY);
+    this.context.lineTo(POS_X + this.pixelsPerAU, posY);
+    this.context.lineWidth = 1;
+    this.context.stroke();
 
     this.context.fillStyle = 'black';
   }
@@ -79,6 +101,7 @@ export class Simulation
       let totalForce = new Vector2(0,0);
       let planet = this.listObject[i];
 
+      // add a force for each other object in the system
       for(let j = 0; j < this.listObject.length; j++)
       {
         if(planet != this.listObject[j])
@@ -91,6 +114,7 @@ export class Simulation
       totalForces.push(totalForce);
     }
 
+    // makes the planets moves with the velocity and force
     for(let i = 0; i < totalForces.length; i++)
     {
       let vX = totalForces[i].x / this.listObject[i].mass * this.timestep;
@@ -105,18 +129,23 @@ export class Simulation
   //start the simulation
   start()
   {
-    this.timer = window.setInterval(
-      () => {
-        this.step();
-        this.draw();
-      }, this.frameRate);
+    if(!this.isRunning)
+    {
+      this.isRunning = true;
+      this.timer = window.setInterval(
+        () => {
+          this.step();
+          this.draw();
+        }, this.frameRate);
+    }
   }
 
   //stop the simulation
   stop()
   {
-    if(this.timer !== undefined)
+    if(this.timer !== undefined && this.isRunning)
     {
+      this.isRunning = false;
       window.clearInterval(this.timer);
     }
   }
